@@ -1,0 +1,35 @@
+@import '~jspsych/css/jspsych.css';
+
+// Basic color setup
+.jspsych-display-element {
+  background-color: black;
+  color: white;
+}
+
+// Make button more touch-friendly
+.jspsych-btn {
+  font-size: 16px;
+  margin-top: 20px;
+  margin-bottom: 20px;
+  padding: 8px 20px;
+}
+
+// Align text and button of form plugin at the left side
+#jspsych-survey-html-form {
+  text-align: left;
+}
+
+// Basic instruction class
+.instruction {
+  max-width: 800px;
+}
+
+.instruction-image {
+  display: flex;
+  justify-content: center;
+  width: 100%;
+  margin-top: 10px;
+  img {
+    width: 50%;
+  }
+}
