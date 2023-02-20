@@ -55,10 +55,10 @@ export default function Button({
   return (
     <div
       className={`${generalStyle} ${specificStyle}`}
-      onTouchStart={() => {
+      onPointerDown={() => {
         onTouchStart(id);
       }}
-      onTouchEnd={() => {
+      onPointerUp={() => {
         onTouchEnd(id);
       }}
     ></div>

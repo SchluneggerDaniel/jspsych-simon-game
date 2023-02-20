@@ -2,11 +2,11 @@ import { JsPsych, JsPsychPlugin, ParameterType, TrialType } from 'jspsych';
 
 // Import React related code
 import React from 'react';
-import { createRoot, Root } from 'react-dom/client';
+import { createRoot } from 'react-dom/client';
 import { ResponseData } from './components/Board';
 
 // Import react components
-import { default as RootComponent } from './components/Root';
+import { Board } from './components/Board';
 
 // Define types for plugin config and data
 export type SimonButtonId = 0 | 1 | 2 | 3;
@@ -57,16 +57,15 @@ class SimonPlugin implements JsPsychPlugin<Info> {
     const config = trial.config as SimonConfig;
 
     // Setup React to render the plugin root
-    const rootElement = document.createElement('div');
-    display_element.appendChild(rootElement);
-    const reactRoot = createRoot(rootElement);
+    const reactRoot = createRoot(document.getElementById('jspsych-content')!);
     reactRoot.render(
       React.createElement(
-        RootComponent,
+        Board,
         {
-          trialConfig: config,
-          onFinish: (trialData) => {
-            finishTrial(this.jsPsych, reactRoot, trialData);
+          config,
+          onFinish: (response) => {
+            reactRoot.unmount();
+            this.jsPsych.finishTrial({ ...config, response });
           },
         },
         null
@@ -74,16 +73,5 @@ class SimonPlugin implements JsPsychPlugin<Info> {
     );
   }
 }
-
-const finishTrial = (
-  jsPsychInstance: JsPsych,
-  reactRoot: Root,
-  data: SimonData
-) => {
-  // Unmount react
-  reactRoot.unmount();
-  // End trial
-  jsPsychInstance.finishTrial(data);
-};
 
 export default SimonPlugin;
