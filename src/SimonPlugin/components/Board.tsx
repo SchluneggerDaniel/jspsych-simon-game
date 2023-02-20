@@ -98,7 +98,10 @@ export const Board: React.FC<Props> = ({
   const onTouchEnd = (id: SimonButtonId) => {
     if (captureResponses) {
       setHighlightedButtonId(null);
-      if (response.length === sequence.length) {
+      if (
+        response.length === sequence.length ||
+        id !== sequence[response.length - 1]
+      ) {
         onFinish(response);
       }
     }
