@@ -17,31 +17,13 @@ import { initJsPsych } from 'jspsych';
 import React from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
 import FullscreenPlugin from '@jspsych/plugin-fullscreen';
-import HtmlKeyboardResponsePlugin from '@jspsych/plugin-html-keyboard-response';
 import SurveyHtmlFormPlugin from '@jspsych/plugin-survey-html-form';
 import PreloadPlugin from '@jspsych/plugin-preload';
-import SimonPlugin, {
-  SimonButtonId,
-  SimonConfig,
-  SimonSequence,
-} from './SimonPlugin/SimonPlugin';
+import SimonPlugin from './SimonPlugin/SimonPlugin';
 import { mainSequences, practiceSequences } from './data/sequences';
+import { RunFunction } from 'jspsych-builder';
 
-/**
- * This method will be executed by jsPsych Builder and is expected to run the
- * jsPsych experiment
- *
- * @param {object} options Options provided by jsPsych Builder
- * @param {any} [options.input] A custom object that can be specified via the
- * JATOS web interface ("JSON study input").
- * @param {"development"|"production"|"jatos"} options.environment The context
- * in which the experiment is run: `development` for `jspsych run`, `production`
- * for `jspsych build`, and "jatos" if served by JATOS
- * @param {{images: string[]; audio: string[]; video: string[];, misc:
- * string[];}} options.assetPaths An object with lists of file paths for the
- * respective `@...Dir` pragmas
- */
-export async function run({ assetPaths, input = {}, environment }) {
+export const run: RunFunction = async ({ assetPaths, environment }) => {
   // Initiate the jsPsych object
   const jsPsych = initJsPsych();
 
@@ -210,4 +192,4 @@ export async function run({ assetPaths, input = {}, environment }) {
     console.log(resultData);
     resultData.localSave('json', 'data.json');
   }
-}
+};

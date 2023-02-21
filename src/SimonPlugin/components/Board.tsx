@@ -1,8 +1,9 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { css } from '@emotion/css';
 import Button from './Button';
-import { SimonButtonId, SimonMode, SimonSequence } from '../SimonPlugin';
-import { SequenceTicker } from '../utils/SequenceTicker';
+import { SimonButtonId, SimonConfig } from '../SimonPlugin';
+
+import delay from 'delay';
 
 const INTERVAL = 270;
 const BLINK_DURATION = 220;
@@ -31,64 +32,64 @@ export type ResponseData = {
 
 type Props = {
   onFinish: (response: ResponseData) => void;
-  sequence: SimonSequence;
-  mode: SimonMode;
+  config: SimonConfig;
 };
 
-export default function Board({ onFinish, sequence, mode }: Props) {
+export const Board: React.FC<Props> = ({
+  onFinish,
+  config: { sequence, mode },
+}) => {
   const [captureResponses, setCaptureResponses] = useState(false);
-  const [highlightState, setHighlightState] = useState<
-    [boolean, boolean, boolean, boolean]
-  >([false, false, false, false]);
+  const [highlightedButtonId, setHighlightedButtonId] = useState<number | null>(
+    null
+  );
 
-  // Instantiate ref to store response data
-  const response = useRef<ResponseData>([]);
-  // Another one to store response timing data
+  const response = useRef<ResponseData>([]).current;
+
+  // Instantiate ref to store response timing data
   const lastResponse = useRef(0);
 
   // Instantiate web audio context for audiovisual mode
   const audioContext = useRef<AudioContext>(new AudioContext());
 
-  // On first mount, setup a timer that will make buttons blink in sequence
-  // order
+  // On first mount, make buttons blink in sequence order
   useEffect(() => {
-    new SequenceTicker(
-      // On tick
-      (id: SimonButtonId) => {
+    (async () => {
+      for (const [sequenceItemId, buttonId] of sequence.entries()) {
         if (mode === 'audiovisual') {
-          emitTone(id, audioContext.current);
+          emitTone(buttonId, audioContext.current);
         }
-        setHighlightState([0 === id, 1 === id, 2 === id, 3 === id]);
-        setTimeout(() => {
-          setHighlightState([false, false, false, false]);
-        }, BLINK_DURATION);
-      },
-      sequence,
-      // On finish
-      () => {
-        setCaptureResponses(true);
-        lastResponse.current = Date.now();
-      },
-      INTERVAL
-    );
+
+        setHighlightedButtonId(buttonId);
+        await delay(BLINK_DURATION);
+        setHighlightedButtonId(null);
+
+        if (sequenceItemId < sequence.length) {
+          await delay(INTERVAL - BLINK_DURATION);
+        }
+      }
+
+      setCaptureResponses(true);
+      lastResponse.current = Date.now();
+    })();
   }, []);
 
   // On touch start event handler for buttons
-  const onTouchStart = (id: SimonButtonId) => {
+  const onTouchStart = (buttonId: SimonButtonId) => {
     if (captureResponses) {
       const now = Date.now();
       // Log in response
-      response.current.push({
-        button: id,
+      response.push({
+        button: buttonId,
         delta_time: now - lastResponse.current,
       });
       // Update last response time
       lastResponse.current = now;
       // Give visual feedback
-      setHighlightState([0 === id, 1 === id, 2 === id, 3 === id]);
+      setHighlightedButtonId(buttonId);
       // If in audiovisual mode, also give auditive feedback
       if (mode === 'audiovisual') {
-        emitTone(id, audioContext.current);
+        emitTone(buttonId, audioContext.current);
       }
     }
   };
@@ -96,9 +97,12 @@ export default function Board({ onFinish, sequence, mode }: Props) {
   // On touch end event handler for buttons
   const onTouchEnd = (id: SimonButtonId) => {
     if (captureResponses) {
-      setHighlightState([false, false, false, false]);
-      if (response.current.length === sequence.length) {
-        onFinish(response.current);
+      setHighlightedButtonId(null);
+      if (
+        response.length === sequence.length ||
+        id !== sequence[response.length - 1]
+      ) {
+        onFinish(response);
       }
     }
   };
@@ -111,16 +115,20 @@ export default function Board({ onFinish, sequence, mode }: Props) {
           <Button
             id={buttonId}
             key={`button-${buttonId}`}
-            highlighted={highlightState[buttonId]}
-            onTouchStart={onTouchStart}
-            onTouchEnd={onTouchEnd}
+            highlighted={highlightedButtonId === buttonId}
+            onTouchStart={() => {
+              onTouchStart(buttonId);
+            }}
+            onTouchEnd={() => {
+              onTouchEnd(buttonId);
+            }}
           />
         );
       })}
       <div className={cutoutStyle}></div>
     </div>
   );
-}
+};
 
 // The frequencies of the audio for audiovisual mode
 // Array index corresponds to button ID
