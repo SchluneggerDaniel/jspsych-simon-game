@@ -3,8 +3,7 @@
 ## To do
 
 - The predefined sequence should just start with one color/tone and after
-correct reproduction by the subject, increase by +1 color/tone.
-- Reaction times should be recorded (for the whole sequence only)
+  correct reproduction by the subject, increase by +1 color/tone.
 
 ---
 

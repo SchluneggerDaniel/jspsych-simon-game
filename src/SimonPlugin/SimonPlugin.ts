@@ -18,11 +18,7 @@ export type SimonConfig = {
   mode: SimonMode;
 };
 
-export type SimonData = {
-  sequence: SimonSequence;
-  mode: SimonMode;
-  response: ResponseData;
-};
+export type SimonData = SimonConfig & ResponseData;
 
 const info = <const>{
   name: 'simon',
@@ -65,7 +61,7 @@ class SimonPlugin implements JsPsychPlugin<Info> {
           config,
           onFinish: (response) => {
             reactRoot.unmount();
-            this.jsPsych.finishTrial({ ...config, response });
+            this.jsPsych.finishTrial({ ...config, ...response });
           },
         },
         null

@@ -1,5 +1,16 @@
 import { SimonConfig } from '../SimonPlugin/SimonPlugin';
 
+function makeSequencesAdaptive(configurations: SimonConfig[]): SimonConfig[] {
+  return configurations.flatMap((config) =>
+    config.sequence.map((_, index) => {
+      return {
+        ...config,
+        sequence: config.sequence.slice(0, index + 1),
+      };
+    })
+  );
+}
+
 export const practiceSequences: SimonConfig[] = [
   { mode: 'audiovisual', sequence: [0, 1, 0, 1] },
   { mode: 'visual', sequence: [0, 1, 1, 0] },
