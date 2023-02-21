@@ -173,7 +173,7 @@ export const run: RunFunction = async ({ assetPaths, environment }) => {
   const resultData = jsPsych.data
     .get()
     .filter({ relevant: true })
-    .filterColumns(['response', 'sequence', 'mode']);
+    .filterColumns(['response', 'sequence', 'mode', 'rt']);
   // If the experiment is run by JATOS, pass the resulting data to the server
   // in CSV form.
   if (environment === 'jatos') {
@@ -181,8 +181,8 @@ export const run: RunFunction = async ({ assetPaths, environment }) => {
     // object is not created here but injected at runtime. This is why for the
     // following line, TypeScript errors are ignored.
     // @ts-ignore
-    jatos.submitResultData(resultData.json(), jatos.startNextComponent);
-    resultData.localSave('json', 'data.json');
+    jatos.submitResultData(resultData.csv(), jatos.startNextComponent);
+    resultData.localSave('csv', 'data.csv');
   }
   // In every other environment, print the data to the browser console in JSON
   // form. Here you can adjust what should happen to the data if the experiment
@@ -190,6 +190,6 @@ export const run: RunFunction = async ({ assetPaths, environment }) => {
   else {
     console.log('End of experiment. Results:');
     console.log(resultData);
-    resultData.localSave('json', 'data.json');
+    resultData.localSave('csv', 'data.csv');
   }
 };
