@@ -25,10 +25,15 @@ const cutoutStyle = css`
   pointer-events: all;
 `;
 
-export type ResponseData = {
+type ButtonPressResponse = {
   button: SimonButtonId;
   delta_time: number;
-}[];
+};
+
+export type ResponseData = {
+  response: ButtonPressResponse[];
+  rt: number;
+};
 
 type Props = {
   onFinish: (response: ResponseData) => void;
@@ -44,10 +49,11 @@ export const Board: React.FC<Props> = ({
     null
   );
 
-  const response = useRef<ResponseData>([]).current;
+  const response = useRef<ButtonPressResponse[]>([]).current;
 
-  // Instantiate ref to store response timing data
-  const lastResponse = useRef(0);
+  // Instantiate refs to store response timing data
+  const lastResponseTime = useRef(0);
+  const startTime = useRef(0);
 
   // Instantiate web audio context for audiovisual mode
   const audioContext = useRef<AudioContext>(new AudioContext());
@@ -70,7 +76,7 @@ export const Board: React.FC<Props> = ({
       }
 
       setCaptureResponses(true);
-      lastResponse.current = Date.now();
+      lastResponseTime.current = startTime.current = Date.now();
     })();
   }, []);
 
@@ -81,10 +87,10 @@ export const Board: React.FC<Props> = ({
       // Log in response
       response.push({
         button: buttonId,
-        delta_time: now - lastResponse.current,
+        delta_time: now - lastResponseTime.current,
       });
       // Update last response time
-      lastResponse.current = now;
+      lastResponseTime.current = now;
       // Give visual feedback
       setHighlightedButtonId(buttonId);
       // If in audiovisual mode, also give auditive feedback
@@ -102,7 +108,10 @@ export const Board: React.FC<Props> = ({
         response.length === sequence.length ||
         id !== sequence[response.length - 1]
       ) {
-        onFinish(response);
+        onFinish({
+          response,
+          rt: lastResponseTime.current - startTime.current,
+        });
       }
     }
   };
