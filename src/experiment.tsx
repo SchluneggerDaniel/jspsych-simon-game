@@ -18,12 +18,15 @@ import React from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
 import FullscreenPlugin from '@jspsych/plugin-fullscreen';
 import SurveyHtmlFormPlugin from '@jspsych/plugin-survey-html-form';
+import SurveyTextPlugin from '@jspsych/plugin-survey-text';
 import PreloadPlugin from '@jspsych/plugin-preload';
 import SimonPlugin from './SimonPlugin/SimonPlugin';
 import { mainSequences, practiceSequences } from './data/sequences';
 import { RunFunction } from 'jspsych-builder';
 
 export const run: RunFunction = async ({ assetPaths, environment }) => {
+  let subjectId = '';
+
   // Initiate the jsPsych object
   const jsPsych = initJsPsych();
 
@@ -38,6 +41,26 @@ export const run: RunFunction = async ({ assetPaths, environment }) => {
     images: assetPaths.images,
     audio: assetPaths.audio,
     video: assetPaths.video,
+  });
+
+  // Ask for subject ID
+  timeline.push({
+    type: SurveyTextPlugin,
+    questions: [
+      {
+        prompt: renderToStaticMarkup(
+          <div className="instruction">
+            <p>Bitte geben Sie Ihre Teilnahme-Nummer ein.</p>
+          </div>
+        ),
+        required: true,
+      },
+    ],
+    button_label: 'Weiter',
+    on_finish: (trial) => {
+      subjectId = trial.response.Q0;
+      console.log(subjectId);
+    },
   });
 
   // Switch to fullscreen
@@ -174,6 +197,7 @@ export const run: RunFunction = async ({ assetPaths, environment }) => {
     .get()
     .filter({ relevant: true })
     .filterColumns(['response', 'sequence', 'mode', 'rt']);
+
   // If the experiment is run by JATOS, pass the resulting data to the server
   // in CSV form.
   if (environment === 'jatos') {
@@ -182,7 +206,6 @@ export const run: RunFunction = async ({ assetPaths, environment }) => {
     // following line, TypeScript errors are ignored.
     // @ts-ignore
     jatos.submitResultData(resultData.csv(), jatos.startNextComponent);
-    resultData.localSave('csv', 'data.csv');
   }
   // In every other environment, print the data to the browser console in JSON
   // form. Here you can adjust what should happen to the data if the experiment
@@ -190,6 +213,10 @@ export const run: RunFunction = async ({ assetPaths, environment }) => {
   else {
     console.log('End of experiment. Results:');
     console.log(resultData);
-    resultData.localSave('csv', 'data.csv');
   }
+
+  resultData.localSave(
+    'csv',
+    `result-${subjectId}-${new Date().toISOString().split('T')[0]}.csv`
+  );
 };
