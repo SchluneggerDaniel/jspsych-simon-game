@@ -1,12 +1,5 @@
 # jspsych-simon-task
 
-## To do
-
-- The predefined sequence should just start with one color/tone and after
-  correct reproduction by the subject, increase by +1 color/tone.
-
----
-
 This project was generated using `jspsych-experiment-template`. It leverages
 `jspsych-builder` (and therefore Babel, Webpack, SASS and even TypeScript) to
 ease jsPsych development and automate the build process.
